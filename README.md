@@ -2,14 +2,12 @@
 
 This is a simple implementation of the DevOps Technical Task.
 
-Upon deployment, the sample `hello-world` application will be accesible from the ALB DNS endpoint (please see the Terraform output: `endpoint` once `terraform apply` completes). It may take a few minutes for all provisioning and health checks to complete before the `hello-world` message will display correctly.
+Upon deployment, the sample `hello-world` application will be accesible from the ALB DNS endpoint. It may take a few minutes for all provisioning and health checks to complete before the `hello-world` message will display correctly.
 
 Please note that this implementation uses a boilerplate VPC module to provide the base network without any particular customization, with default ACLs it may not be secure! (See tfsec ignore messages for VPC module)
 
 ## Building Docker Image
-We can build the image for both standard x86 and AWS Graviton (ARM) EC2s using `docker buildx`. The x-architecture build will use QEMU emulation and so will be slow compared to native, in future a x-toolchain could be used to speed this up if multi-arch builds are desired.
-
-The docker repository listed is public, and so can be pulled from any instance with internet access, rebuilding should not be needed for this deployment.
+We can build the image for both standard x86 and AWS Graviton (ARM) EC2s using `docker buildx`. The x-architecture build will use QEMU emulation and will be slow compared to native. If multi-arch images are desired a x-toolchain could be used to speed this up.
 
 ```
 docker buildx create --name mybuilder --use --bootstrap
@@ -21,13 +19,18 @@ docker buildx build . --platform linux/amd64,linux/arm64 -t robbiearms/hello-wor
 x
 There are 3 variables that can set, the `name` of the stack, which is used for various names. Any additional `tags` to apply to resources. And the Docker image (`image_name`) that will be used.
 
-The defaults should result in a working deployment with sensible values, however if a different docker image is used, please specify it.
+The docker image for this stack has been pre-built and is publicly available at `robbiearms/hello-world:latest`.
+
+The default variables should result in a working deployment. If a different docker image has been built, please specify it in the `image_name` variable.
 
 ```
 terraform apply -var="image_name=robbiearms/hello-world:latest"
 ```
 
-Once the command completes, please note the value of the `endpoint` output. This is the URL to access the `hello-world` application.
+Once the command completes, please note the value of the `endpoint` output. This is the URL to access the `hello-world` application. To test the endpoint from the command line run
+```
+curl $(terraform output | cut -d'"' -f2)
+```
 
 ## Notes
 
@@ -38,7 +41,7 @@ Once the command completes, please note the value of the `endpoint` output. This
 * Referenced various AWS documentation + blog posts (e.g. https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-troubleshooting.html)
 
 
-# Old README section :)
+# Old README preserved :)
 
 
 This is a technical task for DevOps Engineer roles at [franklin.ai](https://franklin.ai).
